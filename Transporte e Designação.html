@@ -1,0 +1,758 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Transporte e Designação</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: uma coluna de estudo; cada método é um "quadro de transporte" clicável, tabela à esquerda e explicação + contas empilhadas à direita */
+:root{
+  --bg:#EDF1F6; --paper:#FFFFFF; --soft:#F5F7FA; --ink:#142033; --muted:#5A6880; --line:#D3DCE7;
+  --accent:#2F5BD3; --accent-bg:#E3EAFB;
+  --hl:#8A5A00; --hl-bg:#FFE7A1; --hl-line:#E0A400;
+  --plus:#17794C; --plus-bg:#D9F2E5; --minus:#B8362F; --minus-bg:#FBE0DC;
+  --cov:#E9E3FA; --cov-line:#7B5CD6;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1620; --paper:#172131; --soft:#1C2739; --ink:#E6ECF4; --muted:#9AA9BE; --line:#2C3A4F;
+  --accent:#8FAEFF; --accent-bg:#1F2E52; --hl:#FFD877; --hl-bg:#4A3A0E; --hl-line:#C99A1E;
+  --plus:#6BDCA5; --plus-bg:#123A28; --minus:#FF948A; --minus-bg:#46211D; --cov:#2B2450; --cov-line:#A88EFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1620; --paper:#172131; --soft:#1C2739; --ink:#E6ECF4; --muted:#9AA9BE; --line:#2C3A4F;
+  --accent:#8FAEFF; --accent-bg:#1F2E52; --hl:#FFD877; --hl-bg:#4A3A0E; --hl-line:#C99A1E;
+  --plus:#6BDCA5; --plus-bg:#123A28; --minus:#FF948A; --minus-bg:#46211D; --cov:#2B2450; --cov-line:#A88EFF; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(24px,3.4vw,32px);font-weight:800}
+h3{font-size:19px;font-weight:600}
+p{margin:0}
+.lead{color:var(--muted);max-width:62ch;margin-top:10px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;margin-top:20px;border-bottom:1px solid var(--line);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+nav.toc a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+nav.toc a:hover{border-color:var(--accent);color:var(--accent)}
+section{padding-top:48px;scroll-margin-top:60px;display:grid;gap:18px}
+.sec-head{display:grid;gap:6px}
+.bullets{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.bullet{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.bullet b{font-family:var(--f-display);font-weight:600;font-size:16px}
+.bullet span{color:var(--muted);font-size:15px}
+.big-arrow{font-family:var(--f-mono);font-weight:600;color:var(--accent)}
+
+/* stepper */
+.stepper{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+@media (max-width:760px){.stage{grid-template-columns:minmax(0,1fr)}}
+.tablewrap{position:relative;overflow-x:auto;padding:22px 18px;background:var(--soft);border-right:1px solid var(--line)}
+@media (max-width:760px){.tablewrap{border-right:0;border-bottom:1px solid var(--line)}}
+.tw-inner{display:flex;justify-content:center;min-width:max-content}
+svg.ov{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.panel{padding:20px 20px 18px;display:grid;gap:12px;align-content:start;min-width:0}
+.stepno{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.04em}
+.panel h3{font-size:21px}
+.panel .txt{font-size:16px}
+.calc{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-family:var(--f-mono);font-size:15px;display:grid;gap:3px;font-variant-numeric:tabular-nums}
+.calc .l{white-space:pre-wrap}
+.calc .h{font-family:var(--f-body);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.calc .h:first-child{margin-top:0}
+.calc .r{font-weight:600;color:var(--accent);border-top:1px dashed var(--line);padding-top:4px;margin-top:2px}
+.calc .d{color:var(--muted);font-size:13px;font-family:var(--f-body)}
+.rule{display:flex;gap:10px;align-items:flex-start;background:var(--hl-bg);color:var(--hl);border-radius:10px;padding:10px 14px;font-weight:700}
+.rule .ico{font-family:var(--f-mono);font-size:18px;line-height:1.3}
+.controls{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.controls button{font-family:var(--f-body);font-size:15px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.controls button.next{background:var(--accent);border-color:var(--accent);color:var(--paper);font-weight:700}
+.controls button:disabled{opacity:.45;cursor:default}
+.controls button:focus-visible,nav.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.prog{flex:1 1 120px;height:6px;border-radius:99px;background:var(--line);overflow:hidden;min-width:80px}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .25s}
+
+/* quadro de transporte */
+.tt{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+.tt th{font-family:var(--f-mono);font-weight:600;font-size:14px;color:var(--muted);padding:6px 8px}
+.tt th.off{text-decoration:line-through;opacity:.5}
+.tt th.fict{color:var(--accent)}
+.tt td.cell{position:relative;width:64px;height:58px;min-width:64px;border:1px solid var(--line);margin:0;background:var(--paper);text-align:center;vertical-align:middle;transition:background .2s}
+.tt td.cell + td.cell{border-left:0}
+.tt tbody tr + tr td.cell{border-top:0}
+.cost{position:absolute;top:0;right:0;font-family:var(--f-mono);font-size:11px;line-height:1;padding:4px 5px;color:var(--muted);border-left:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--soft)}
+.val{font-family:var(--f-mono);font-weight:600;font-size:19px}
+.tag{position:absolute;left:3px;bottom:3px;font-family:var(--f-mono);font-size:11px;font-weight:600;padding:1px 5px;border-radius:4px;line-height:1.4}
+.tt td.side{font-family:var(--f-mono);font-size:15px;padding:4px 10px;text-align:center;min-width:56px}
+.tt td.side s{color:var(--muted);font-size:12px;margin-right:4px}
+.tt td.side.zero{color:var(--muted)}
+.tt td.side.max{background:var(--hl-bg);color:var(--hl);font-weight:600;border-radius:6px}
+.tt td.side.uv{color:var(--accent);font-weight:600}
+.tt td.side.ask{color:var(--muted)}
+.tt td.side.new{background:var(--accent-bg);border-radius:6px}
+.tt td.side.mark{color:var(--cov-line);font-weight:600}
+.tt tr.bot td.side{padding-top:8px}
+.tt th.sidehead{font-family:var(--f-body);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+td.cell.fill{background:var(--accent-bg)}
+td.cell.fill .val{color:var(--accent)}
+td.cell.now{background:var(--hl-bg);box-shadow:inset 0 0 0 2px var(--hl-line)}
+td.cell.now .val{color:var(--hl)}
+td.cell.band{background:var(--hl-bg)}
+td.cell.band.fill{background:var(--accent-bg)}
+td.cell.off .cost,td.cell.off .val{opacity:.35}
+td.cell.off{background:repeating-linear-gradient(135deg,var(--paper) 0 6px,var(--soft) 6px 12px)}
+td.cell.fict .cost{color:var(--accent)}
+td.cell.fictrow{background:var(--soft)}
+td.cell.changed .val{color:var(--plus)}
+td.cell.leave .val{color:var(--minus);text-decoration:line-through}
+td.cell.zero .val{color:var(--accent)}
+td.cell.xz .val{color:var(--muted);text-decoration:line-through}
+td.cell.asg .val{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:34px;border:2.5px solid var(--ink);border-radius:8px}
+td.cell.cov{background:var(--cov)}
+td.cell.min{background:var(--hl-bg);box-shadow:inset 0 0 0 2px var(--hl-line)}
+td.cell.min .val{color:var(--hl)}
+td.cell.dim .val{opacity:.4}
+.tag.plus{background:var(--plus-bg);color:var(--plus)}
+.tag.minus{background:var(--minus-bg);color:var(--minus)}
+.tag.neg{background:var(--minus-bg);color:var(--minus)}
+.tag.pos{background:var(--plus-bg);color:var(--plus)}
+.tag.big{font-size:13px;left:50%;transform:translateX(-50%);bottom:4px}
+@keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+td.cell.now .val,td.cell.min .val{display:inline-block;animation:pop .35s ease-out}
+@media (prefers-reduced-motion:reduce){td.cell .val{animation:none!important}.prog i{transition:none}}
+
+/* intro */
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:14px;padding:6px 10px;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+.sw{width:14px;height:14px;border-radius:3px;display:inline-block}
+.intro-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.intro-grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;min-width:0}
+.bars{display:grid;gap:10px}
+.bar-row{display:grid;grid-template-columns:84px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:14px}
+.bar{height:22px;border-radius:6px;display:flex;overflow:hidden;background:var(--soft)}
+.bar span{height:100%;border-right:2px solid var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11px;color:var(--paper)}
+.bar.o span{background:var(--accent)}
+.bar.d span{background:var(--plus)}
+.road{display:grid;gap:0;counter-reset:r}
+.road li{list-style:none;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.road li:last-child{border-bottom:0}
+.road .n{width:30px;height:30px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-family:var(--f-mono);font-weight:600;display:flex;align-items:center;justify-content:center}
+.road b{font-family:var(--f-display);font-weight:600}
+.road small{display:block;color:var(--muted);font-size:14px}
+.road ul{margin:0;padding:0}
+
+/* cola */
+.cola{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.cola .card{gap:8px}
+.cola .card h3{font-size:17px}
+.cola .k{font-family:var(--f-mono);font-size:14px;background:var(--soft);border-radius:8px;padding:8px 10px;white-space:pre-wrap}
+.note{font-size:15px;color:var(--muted)}
+.demo{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.bigcell{position:relative;width:150px;height:120px;border:2px solid var(--ink);border-radius:4px;background:var(--accent-bg);flex:0 0 auto}
+.bigcell .bc-cost{position:absolute;top:0;right:0;width:48px;height:40px;border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--soft);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:20px;color:var(--muted)}
+.bigcell .bc-val{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-family:var(--f-mono);font-weight:600;font-size:34px;color:var(--accent)}
+.demo-keys{display:grid;gap:10px;flex:1 1 220px;min-width:0}
+.dk{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:start}
+.dk .dot{width:18px;height:18px;border-radius:4px;margin-top:3px}
+.tt.addr .val{font-size:15px}
+.ovwrap{position:relative;overflow-x:auto}
+.ovwrap .inner{display:flex;justify-content:center;min-width:max-content;padding:10px 4px}
+.paths{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.paths{grid-template-columns:minmax(0,1fr)}}
+.pathcap{font-family:var(--f-mono);font-size:14px;text-align:center;color:var(--accent);font-weight:600}
+.same{display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.same div{background:var(--plus-bg);color:var(--plus);border-radius:8px;padding:8px 12px;font-weight:700;font-size:15px}
+.tip{background:var(--paper);border:1px dashed var(--accent);border-radius:12px;padding:14px 16px;display:grid;gap:4px}
+.tip b{color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Modelagem Matemática · Aulas 12 a 16 · Prof. Júlio Ardito</div>
+    <h1 style="margin-top:8px">Transporte e Designação</h1>
+    <p class="lead">Cada método aqui é um quadro que muda na sua frente. Aperte <b>Próximo</b> e acompanhe: a célula da vez fica amarela e as contas aparecem uma embaixo da outra. Todos os exemplos são os dos slides.</p>
+  </header>
+
+  <nav class="toc" aria-label="Partes">
+    <a href="#ideia">1 · A ideia</a>
+    <a href="#ler">Cantinho e X</a>
+    <a href="#noroeste">2 · Canto Noroeste</a>
+    <a href="#vogel">3 · Vogel</a>
+    <a href="#uv">4 · Ótimo com U e V</a>
+    <a href="#desbal">5 · Desbalanceado</a>
+    <a href="#hungaro">6 · Designação</a>
+    <a href="#max">7 · Maximizar</a>
+    <a href="#cola">Cola final</a>
+  </nav>
+
+  <section id="ideia">
+    <div class="sec-head"><div class="eyebrow">Parte 1</div><h2>O que o problema quer saber</h2>
+      <p class="lead">Algumas origens têm um produto. Alguns destinos precisam dele. Cada rota tem um preço por unidade. A pergunta é sempre a mesma: quanto mandar por cada rota para gastar o mínimo?</p></div>
+    <div class="intro-grid">
+      <div class="card">
+        <h3>Como ler o quadro</h3>
+        <div style="overflow-x:auto"><div id="introTable" style="display:flex;justify-content:center;min-width:max-content"></div></div>
+        <div class="legend">
+          <span class="chip"><span class="sw" style="background:var(--soft);border:1px solid var(--line)"></span>cantinho = custo por unidade</span>
+          <span class="chip"><span class="sw" style="background:var(--accent-bg)"></span>número grande = quanto mandar (X)</span>
+          <span class="chip"><span class="sw" style="background:var(--accent)"></span>coluna da direita = oferta</span>
+          <span class="chip"><span class="sw" style="background:var(--plus)"></span>linha de baixo = demanda</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Antes de tudo: a conta fecha?</h3>
+        <div class="bars">
+          <div class="bar-row"><span>Oferta</span><div class="bar o"><span style="width:18.18%">10</span><span style="width:36.36%">20</span><span style="width:21.82%">12</span><span style="width:23.64%">13</span></div><b>55</b></div>
+          <div class="bar-row"><span>Demanda</span><div class="bar d"><span style="width:14.55%">8</span><span style="width:58.18%">32</span><span style="width:27.27%">15</span></div><b>55</b></div>
+        </div>
+        <p class="note">As duas barras têm o mesmo tamanho, então o problema está <b>balanceado</b>. Se uma for maior, criamos uma linha ou coluna de mentira com custo 0 (Parte 5).</p>
+        <h3 style="margin-top:6px">O caminho até a resposta</h3>
+        <ul class="road">
+          <li><span class="n">1</span><div><b>Rascunho</b><small>Canto Noroeste ou Vogel. Uma distribuição que funciona.</small></div></li>
+          <li><span class="n">2</span><div><b>Teste</b><small>Calcula U e V e vê se alguma célula vazia baratearia o custo.</small></div></li>
+          <li><span class="n">3</span><div><b>Melhora</b><small>Circuito de compensação: coloca a rota nova e ajusta o resto.</small></div></li>
+          <li><span class="n">4</span><div><b>Repete</b><small>Volta ao teste até não ter mais nenhum número negativo.</small></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="ler">
+    <div class="sec-head"><div class="eyebrow">Parte 1 · continuação</div><h2>O cantinho e os nomes X</h2>
+      <p class="lead">Duas coisas que aparecem em todos os métodos: de onde vem o número do cantinho e como se dá nome às células.</p></div>
+    <div class="intro-grid">
+      <div class="card">
+        <h3>O cantinho é o custo e vem pronto</h3>
+        <p>Você não calcula esse número. O professor já dá a tabela de custos no enunciado e você só copia cada número para o cantinho da sua célula. O meio da célula fica livre para escrever quanto vai mandar.</p>
+        <div class="demo">
+          <div class="bigcell" aria-label="Célula com custo 6 no cantinho e quantidade 8 no meio"><div class="bc-cost">6</div><div class="bc-val">8</div></div>
+          <div class="demo-keys">
+            <div class="dk"><span class="dot" style="background:var(--soft);border:1px solid var(--line)"></span><span><b>Cantinho = custo.</b> Copiado do enunciado. Mandar 1 unidade por essa rota custa 6.</span></div>
+            <div class="dk"><span class="dot" style="background:var(--accent-bg);border:1px solid var(--accent)"></span><span><b>Meio = quantidade.</b> É isso que você descobre com os métodos.</span></div>
+          </div>
+        </div>
+        <div class="calc"><div class="h">Custo daquela célula</div><div class="l">quantidade × custo</div><div class="l">8 × 6</div><div class="l r">= 48</div></div>
+      </div>
+      <div class="card">
+        <h3>X é o endereço da célula</h3>
+        <p>Os dois números pequenos dizem onde a célula está, igual a uma matriz.</p>
+        <div class="calc"><div class="l">X<sub style="font-size:13px">linha coluna</sub></div><div class="d">1º número = linha (qual origem)</div><div class="d">2º número = coluna (qual destino)</div></div>
+        <div class="ovwrap"><div class="inner" id="addrTable"></div></div>
+        <div class="calc"><div class="h">Exemplos</div><div class="l">X₂₃ → linha 2, coluna 3</div><div class="d">quanto O₂ manda para D₃</div><div class="l">X₄₁ → linha 4, coluna 1</div><div class="d">quanto O₄ manda para D₁</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Sempre vai ser X₁₁, X₁₂, X₂₂...? Não!</h3>
+      <p>Quais células são preenchidas muda em cada problema. Quem decide é o que zera primeiro: a oferta da linha (desce) ou a demanda da coluna (vai para a direita). Veja o Canto Noroeste em dois exemplos da aula:</p>
+      <div class="paths">
+        <div><div class="ovwrap" id="pathA"><div class="inner"></div><svg class="ov" aria-hidden="true"></svg></div>
+          <div class="pathcap">X₁₁ → X₁₂ → X₂₂ → X₃₂ → X₃₃ → X₄₃</div>
+          <div class="calc" style="margin-top:8px"><div class="h">1º passo</div><div class="l">X₁₁ = menor(10, 8) = 8</div><div class="l">D₁ zerou primeiro</div><div class="l r">→ vai para a direita (X₁₂)</div></div></div>
+        <div><div class="ovwrap" id="pathB"><div class="inner"></div><svg class="ov" aria-hidden="true"></svg></div>
+          <div class="pathcap">X₁₁ → X₂₁ → X₂₂ → X₃₂ → X₃₃</div>
+          <div class="calc" style="margin-top:8px"><div class="h">1º passo</div><div class="l">X₁₁ = menor(70, 125) = 70</div><div class="l">O₁ zerou primeiro</div><div class="l r">↓ desce (X₂₁)</div></div></div>
+      </div>
+      <div class="same"><div>✓ Sempre começa em X₁₁</div><div>✓ Sempre termina no canto de baixo à direita</div><div>✓ Anda em escadinha: só ↓ ou →</div></div>
+    </div>
+  </section>
+
+  <section id="noroeste">
+    <div class="sec-head"><div class="eyebrow">Parte 2 · Rascunho simples</div><h2>Método do Canto Noroeste</h2>
+      <p class="lead">Ele nem olha o custo. Começa no canto de cima à esquerda e vai enchendo a tabela.</p></div>
+    <div class="bullets">
+      <div class="bullet"><b>Coloque o máximo</b><span>O menor entre o que a linha tem e o que a coluna precisa.</span></div>
+      <div class="bullet"><b><span class="big-arrow">↓</span> Linha zerou</b><span>A origem esvaziou: desce uma linha.</span></div>
+      <div class="bullet"><b><span class="big-arrow">→</span> Coluna zerou</b><span>O destino ficou satisfeito: vai para a direita.</span></div>
+    </div>
+    <div class="stepper" id="st-nw"></div>
+  </section>
+
+  <section id="vogel">
+    <div class="sec-head"><div class="eyebrow">Parte 3 · Rascunho esperto</div><h2>Método de Vogel</h2>
+      <p class="lead">Ele olha o custo. Em cada rodada pergunta: onde eu perco mais se não usar a rota mais barata?</p></div>
+    <div class="bullets">
+      <div class="bullet"><b>Penalidade</b><span>Em cada linha e coluna: 2º menor custo − menor custo.</span></div>
+      <div class="bullet"><b>Escolha a maior</b><span>Na linha ou coluna de maior penalidade, use a célula mais barata.</span></div>
+      <div class="bullet"><b>Risque e repita</b><span>Quem zerou sai do jogo. Recalcule as penalidades.</span></div>
+    </div>
+    <div class="stepper" id="st-vogel"></div>
+  </section>
+
+  <section id="uv">
+    <div class="sec-head"><div class="eyebrow">Parte 4 · Solução completa</div><h2>Chegando no ótimo com U e V</h2>
+      <p class="lead">Partimos do rascunho do Canto Noroeste (custo 450) e melhoramos até 295, igual ao slide.</p></div>
+    <div class="bullets">
+      <div class="bullet"><b>Células cheias</b><span>custo = U + V. Com U₁ = 0 você descobre todos os outros.</span></div>
+      <div class="bullet"><b>Células vazias</b><span>custo − U − V. Se der negativo, essa rota baratearia.</span></div>
+      <div class="bullet"><b>Circuito</b><span>Entra o mais negativo. Alterna +θ e −θ. θ = menor dos −θ.</span></div>
+    </div>
+    <div class="stepper" id="st-uv"></div>
+  </section>
+
+  <section id="desbal">
+    <div class="sec-head"><div class="eyebrow">Parte 5 · Casos especiais</div><h2>Problema desbalanceado</h2>
+      <p class="lead">Quando oferta e demanda não batem, a gente inventa quem falta, com custo zero.</p></div>
+    <div class="stepper" id="st-desbal"></div>
+    <div class="tip"><b>Rotas proibidas (o X na tabela do Exercício 2)</b><span>Coloque um custo gigante, chamado M, nessas células. Como é caríssimo, o método nunca vai escolher essa rota.</span></div>
+  </section>
+
+  <section id="hungaro">
+    <div class="sec-head"><div class="eyebrow">Parte 6 · Aula 16</div><h2>Designação pelo Método Húngaro</h2>
+      <p class="lead">Cada origem manda exatamente 1 e cada destino recebe exatamente 1. Aqui: cada máquina (L) vai para uma fábrica (F). O objetivo é achar zeros e designar neles.</p></div>
+    <div class="stepper" id="st-hun"></div>
+  </section>
+
+  <section id="max">
+    <div class="sec-head"><div class="eyebrow">Parte 7 · Aula 16</div><h2>E quando é para maximizar?</h2>
+      <p class="lead">O Húngaro só sabe minimizar. O truque é transformar lucro em perda. Exemplo dos vendedores (V) e regiões (R).</p></div>
+    <div class="stepper" id="st-max"></div>
+  </section>
+
+  <section id="cola">
+    <div class="sec-head"><div class="eyebrow">Revisão</div><h2>Cola final</h2></div>
+    <div class="cola">
+      <div class="card"><h3>1. Balanceou?</h3><div class="k">soma oferta = soma demanda?
+não → linha ou coluna
+fictícia com custo 0</div></div>
+      <div class="card"><h3>2. Canto Noroeste</h3><div class="k">começa em X₁₁
+linha zerou  → ↓
+coluna zerou → →</div></div>
+      <div class="card"><h3>3. Vogel</h3><div class="k">penalidade =
+2º menor − menor
+maior penalidade →
+célula mais barata</div></div>
+      <div class="card"><h3>4. Conferência</h3><div class="k">células cheias =
+m + n − 1</div></div>
+      <div class="card"><h3>5. U e V</h3><div class="k">U₁ = 0
+cheia: C = U + V
+vazia: C − U − V</div></div>
+      <div class="card"><h3>6. É ótima?</h3><div class="k">todos ≥ 0 → ótima
+tem negativo → entra
+o mais negativo</div></div>
+      <div class="card"><h3>7. Circuito</h3><div class="k">+θ −θ +θ −θ
+θ = menor dos −θ
+novo custo =
+antigo + coef × θ</div></div>
+      <div class="card"><h3>8. Húngaro</h3><div class="k">− menor da linha
+− menor da coluna
+designa nos zeros
+faltou? cobre e ajusta</div></div>
+      <div class="card"><h3>9. Maximizar</h3><div class="k">perda = maior − valor
+aplica o Húngaro
+na tabela de perdas</div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const SUB='₀₁₂₃₄₅₆₇₈₉';
+const sub=n=>String(n).split('').map(d=>SUB[+d]).join('');
+const N=x=>x<0?'−'+(-x):String(x);
+const P=x=>x<0?'('+N(x)+')':String(x);
+const lab=(p,k)=>p+sub(k+1);
+const cellName=(i,j)=>'X'+sub(i+1)+sub(j+1);
+
+function renderTable(s){
+  let h='<table class="tt"><thead><tr><th></th>';
+  s.cols.forEach((c,j)=>h+=`<th class="${(s.colK||[])[j]||''}">${c}</th>`);
+  (s.right||[]).forEach(r=>h+=`<th class="sidehead">${r.h}</th>`);
+  h+='</tr></thead><tbody>';
+  s.rows.forEach((rl,i)=>{
+    h+=`<tr><th class="${(s.rowK||[])[i]||''}">${rl}</th>`;
+    s.cols.forEach((_,j)=>{const c=s.cells[i][j];
+      h+=`<td class="cell ${c.k||''}" data-i="${i}" data-j="${j}">${c.c!=null?`<span class="cost">${c.c}</span>`:''}<span class="val">${c.v??''}</span>${c.t?`<span class="tag ${c.tk||''}">${c.t}</span>`:''}</td>`;});
+    (s.right||[]).forEach(r=>h+=`<td class="side ${(r.k||[])[i]||''}">${r.v[i]??''}</td>`);
+    h+='</tr>';});
+  (s.bottom||[]).forEach(b=>{
+    h+=`<tr class="bot"><th class="sidehead">${b.h}</th>`;
+    s.cols.forEach((_,j)=>h+=`<td class="side ${(b.k||[])[j]||''}">${b.v[j]??''}</td>`);
+    (s.right||[]).forEach((_,ri)=>h+=`<td class="side">${ri===0&&b.extra?b.extra:''}</td>`);
+    h+='</tr>';});
+  return h+'</tbody></table>';
+}
+
+function drawOverlay(wrap,s){
+  const svg=wrap.querySelector('svg.ov');svg.innerHTML='';
+  if(!s.loop&&!s.cover&&!s.path)return;
+  const W=wrap.scrollWidth,H=wrap.scrollHeight;
+  svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const wr=wrap.getBoundingClientRect();
+  const box=(i,j)=>{const td=wrap.querySelector(`td.cell[data-i="${i}"][data-j="${j}"]`);const r=td.getBoundingClientRect();
+    const x=r.left-wr.left+wrap.scrollLeft,y=r.top-wr.top+wrap.scrollTop;return {x,y,w:r.width,h:r.height,cx:x+r.width/2,cy:y+r.height/2}};
+  const NS='http://www.w3.org/2000/svg';
+  const css=getComputedStyle(document.documentElement);
+  if(s.loop){
+    const pts=s.loop.map(([i,j])=>box(i,j));
+    const poly=document.createElementNS(NS,'polygon');
+    poly.setAttribute('points',pts.map(p=>p.cx+','+p.cy).join(' '));
+    poly.setAttribute('fill','none');poly.setAttribute('stroke',css.getPropertyValue('--accent').trim());
+    poly.setAttribute('stroke-width','3');poly.setAttribute('stroke-dasharray','7 5');poly.setAttribute('stroke-linejoin','round');poly.setAttribute('opacity','.85');
+    svg.appendChild(poly);
+    pts.forEach((p,k)=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',p.cx);c.setAttribute('cy',p.cy);c.setAttribute('r',k===0?7:5);
+      c.setAttribute('fill',css.getPropertyValue(k%2===0?'--plus':'--minus').trim());svg.appendChild(c);});
+  }
+  if(s.path){
+    const pts=s.path.map(([i,j])=>box(i,j));const acc=css.getPropertyValue('--accent').trim();
+    const pl=document.createElementNS(NS,'polyline');pl.setAttribute('points',pts.map(p=>p.cx+','+p.cy).join(' '));
+    pl.setAttribute('fill','none');pl.setAttribute('stroke',acc);pl.setAttribute('stroke-width','3');pl.setAttribute('stroke-linejoin','round');pl.setAttribute('opacity','.55');svg.appendChild(pl);
+    pts.forEach((p,k)=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',p.x+12);c.setAttribute('cy',p.y+12);c.setAttribute('r',9);c.setAttribute('fill',acc);svg.appendChild(c);
+      const t=document.createElementNS(NS,'text');t.setAttribute('x',p.x+12);t.setAttribute('y',p.y+16);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','11');t.setAttribute('font-family','monospace');t.setAttribute('font-weight','700');t.setAttribute('fill',css.getPropertyValue('--paper').trim());t.textContent=k+1;svg.appendChild(t);});
+  }
+  if(s.cover){
+    const col=css.getPropertyValue('--cov-line').trim();
+    const nR=s.rows.length,nC=s.cols.length;
+    const line=(x1,y1,x2,y2)=>{const l=document.createElementNS(NS,'line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+      l.setAttribute('stroke',col);l.setAttribute('stroke-width','5');l.setAttribute('stroke-linecap','round');l.setAttribute('opacity','.75');svg.appendChild(l);};
+    (s.cover.rows||[]).forEach(i=>{const a=box(i,0),b=box(i,nC-1);line(a.x-8,a.cy,b.x+b.w+8,b.cy);});
+    (s.cover.cols||[]).forEach(j=>{const a=box(0,j),b=box(nR-1,j);line(a.cx,a.y-8,b.cx,b.y+b.h+8);});
+  }
+}
+
+function calcHTML(lines){
+  if(!lines||!lines.length)return '';
+  return '<div class="calc">'+lines.map(l=>{
+    if(l[0]==='#')return `<div class="h">${l.slice(1)}</div>`;
+    if(l[0]==='!')return `<div class="l r">${l.slice(1)}</div>`;
+    if(l[0]==='~')return `<div class="d">${l.slice(1)}</div>`;
+    return `<div class="l">${l}</div>`;}).join('')+'</div>';
+}
+
+function makeStepper(id,steps){
+  const root=document.getElementById(id);
+  root.innerHTML=`<div class="stage"><div class="tablewrap"><div class="tw-inner"></div><svg class="ov" aria-hidden="true"></svg></div><div class="panel" aria-live="polite"></div></div>
+  <div class="controls"><button class="prev" type="button">← Voltar</button><button class="next" type="button">Próximo →</button><div class="prog"><i></i></div><button class="reset" type="button">Recomeçar</button></div>`;
+  const tw=root.querySelector('.tablewrap'),inner=root.querySelector('.tw-inner'),panel=root.querySelector('.panel');
+  const bPrev=root.querySelector('.prev'),bNext=root.querySelector('.next'),bar=root.querySelector('.prog i');
+  let k=0;
+  function show(){
+    const s=steps[k];
+    inner.innerHTML=renderTable(s.table);
+    panel.innerHTML=`<div class="stepno">${s.eb?s.eb+' · ':''}passo ${k+1} de ${steps.length}</div><h3>${s.title}</h3>${s.text?`<p class="txt">${s.text}</p>`:''}${calcHTML(s.calc)}${s.rule?`<div class="rule"><span class="ico">${s.ico||'→'}</span><span>${s.rule}</span></div>`:''}`;
+    bPrev.disabled=k===0;bNext.disabled=k===steps.length-1;
+    bNext.textContent=k===steps.length-1?'Fim':'Próximo →';
+    bar.style.width=((k+1)/steps.length*100)+'%';
+    requestAnimationFrame(()=>drawOverlay(tw,s.table));
+  }
+  bPrev.onclick=()=>{if(k>0){k--;show();}};
+  bNext.onclick=()=>{if(k<steps.length-1){k++;show();}};
+  root.querySelector('.reset').onclick=()=>{k=0;show();};
+  root.tabIndex=0;
+  root.addEventListener('keydown',e=>{if(e.key==='ArrowRight')bNext.click();if(e.key==='ArrowLeft')bPrev.click();});
+  window.addEventListener('resize',()=>drawOverlay(tw,steps[k].table));
+  show();
+}
+
+const remFmt=(r,o)=>r===o?String(o):`<s>${o}</s>${r}`;
+
+/* ---------- Canto Noroeste ---------- */
+function nwGen(C,S,D){
+  const m=C.length,n=C[0].length,X=C.map(r=>r.map(()=>null)),s=S.slice(),d=D.slice(),steps=[];
+  const rows=C.map((_,i)=>lab('O',i)),cols=C[0].map((_,j)=>lab('D',j));
+  const tbl=cur=>({rows,cols,
+    cells:C.map((r,i)=>r.map((c,j)=>({c,v:X[i][j]??'',k:(X[i][j]!=null?'fill ':'')+(cur&&cur[0]===i&&cur[1]===j?'now':'')}))),
+    right:[{h:'Oferta',v:s.map((x,i)=>remFmt(x,S[i])),k:s.map(x=>x===0?'zero':'')}],
+    bottom:[{h:'Demanda',v:d.map((x,j)=>remFmt(x,D[j])),k:d.map(x=>x===0?'zero':'')}]});
+  steps.push({title:'Comece pelo canto noroeste',text:'A tabela está vazia. O número pequeno no cantinho de cada célula é o custo. O primeiro a ser preenchido é sempre X₁₁, lá em cima à esquerda.',
+    calc:['#Confere o balanço','Oferta  = '+S.join(' + ')+' = '+S.reduce((a,b)=>a+b),'Demanda = '+D.join(' + ')+' = '+D.reduce((a,b)=>a+b),'!iguais → pode começar'],table:tbl(null)});
+  let i=0,j=0;
+  while(i<m&&j<n){
+    const sb=s[i],db=d[j],q=Math.min(sb,db);X[i][j]=q;s[i]-=q;d[j]-=q;
+    let rule,ico;const last=(i===m-1&&j===n-1);
+    if(last){rule='Os dois zeraram ao mesmo tempo. Acabou!';ico='✓';}
+    else if(s[i]===0){rule=`${lab('O',i)} esvaziou → desce para a linha de baixo`;ico='↓';}
+    else{rule=`${lab('D',j)} ficou satisfeito → vai para a coluna da direita`;ico='→';}
+    steps.push({title:`${cellName(i,j)} = ${q}`,text:`Quanto cabe nessa célula? O menor valor entre o que sobra na linha e o que falta na coluna.`,
+      calc:[`#Quanto cabe em ${cellName(i,j)}?`,`${lab('O',i)} ainda tem   ${sb}`,`${lab('D',j)} ainda precisa ${db}`,`!menor dos dois = ${q}`,'#Depois de preencher',`${lab('O',i)} fica com ${s[i]}`,`${lab('D',j)} fica faltando ${d[j]}`],
+      rule,ico,table:tbl([i,j])});
+    if(last)break;
+    if(s[i]===0)i++;else j++;
+  }
+  const lines=['#Custo = quantidade × custo'];let tot=0,cnt=0;
+  X.forEach((r,a)=>r.forEach((x,b)=>{if(x!=null){lines.push(`${cellName(a,b)}: ${x} × ${C[a][b]} = ${x*C[a][b]}`);tot+=x*C[a][b];cnt++;}}));
+  lines.push('!Total = '+tot,'#Conferência',`células cheias = ${cnt}`,`m + n − 1 = ${m} + ${n} − 1 = ${m+n-1}`,cnt===m+n-1?'!bateu ✓':'!não bateu');
+  steps.push({title:`Rascunho pronto: custo ${tot}`,text:'Funciona, mas repare que ele mandou muita coisa por rotas caras. É só o ponto de partida.',calc:lines,
+    rule:'Sempre confira se tem m + n − 1 células cheias',ico:'✓',table:tbl(null)});
+  return {steps,X,cost:tot};
+}
+
+/* ---------- Vogel ---------- */
+function vogelGen(C,S,D){
+  const m=C.length,n=C[0].length,X=C.map(r=>r.map(()=>null)),s=S.slice(),d=D.slice(),steps=[];
+  const rOn=Array(m).fill(true),cOn=Array(n).fill(true);
+  const rows=C.map((_,i)=>lab('O',i)),cols=C[0].map((_,j)=>lab('D',j));
+  const tbl=(o={})=>{
+    const t={rows,cols,rowK:rOn.map(x=>x?'':'off'),colK:cOn.map(x=>x?'':'off'),
+      cells:C.map((r,i)=>r.map((c,j)=>{let k='';if(X[i][j]!=null)k+='fill ';else if(!rOn[i]||!cOn[j])k+='off ';
+        if(o.band&&((o.band.t==='r'&&o.band.i===i)||(o.band.t==='c'&&o.band.i===j)))k+='band ';
+        if(o.cur&&o.cur[0]===i&&o.cur[1]===j)k+='now';return {c,v:X[i][j]??'',k};})),
+      right:[{h:'Oferta',v:s.map((x,i)=>remFmt(x,S[i])),k:s.map(x=>x===0?'zero':'')}],
+      bottom:[{h:'Demanda',v:d.map((x,j)=>remFmt(x,D[j])),k:d.map(x=>x===0?'zero':'')}]};
+    if(o.pr){t.right.push({h:'Penal.',v:o.pr.map(x=>x==null?'':x),k:o.pr.map((x,i)=>o.max&&o.max.t==='r'&&o.max.i===i?'max':'')});
+      t.bottom.push({h:'Penal.',v:o.pc.map(x=>x==null?'':x),k:o.pc.map((x,j)=>o.max&&o.max.t==='c'&&o.max.i===j?'max':'')});}
+    return t;};
+  steps.push({title:'O quadro do slide',text:'Mesmo começo: confere o balanço. A diferença é que agora os custos importam.',
+    calc:['#Confere o balanço','Oferta  = '+S.join(' + ')+' = '+S.reduce((a,b)=>a+b),'Demanda = '+D.join(' + ')+' = '+D.reduce((a,b)=>a+b),'!iguais → pode começar'],table:tbl()});
+  let round=1;
+  while(true){
+    const ar=[...rOn.keys()].filter(i=>rOn[i]),ac=[...cOn.keys()].filter(j=>cOn[j]);
+    if(!ar.length||!ac.length)break;
+    if(ac.length===1||ar.length===1){
+      const lines=['#Distribui o que sobrou'];const cells=[];
+      ar.forEach(i=>ac.forEach(j=>{const q=Math.min(s[i],d[j]);if(q>0){X[i][j]=q;s[i]-=q;d[j]-=q;cells.push([i,j]);lines.push(`${cellName(i,j)} = ${q}`);}}));
+      const which=ac.length===1?`a coluna ${lab('D',ac[0])}`:`a linha ${lab('O',ar[0])}`;
+      steps.push({eb:`Rodada ${round}`,title:`Só sobrou ${which}`,text:'Não tem mais escolha: cada um manda o que ainda tem.',calc:lines,
+        rule:'Quando sobra uma linha ou coluna só, não precisa calcular penalidade',ico:'✓',table:tbl()});
+      ar.forEach(i=>{if(s[i]===0)rOn[i]=false});ac.forEach(j=>{if(d[j]===0)cOn[j]=false});
+      break;
+    }
+    const pen=a=>{const v=a.slice().sort((x,y)=>x-y);return {a:v[0],b:v[1],p:v[1]-v[0]}};
+    const pr=C.map((r,i)=>rOn[i]?pen(ac.map(j=>r[j])):null),pc=C[0].map((_,j)=>cOn[j]?pen(ar.map(i=>C[i][j])):null);
+    let max={t:'r',i:-1,p:-1};
+    pr.forEach((x,i)=>{if(x&&x.p>max.p)max={t:'r',i,p:x.p}});pc.forEach((x,j)=>{if(x&&x.p>max.p)max={t:'c',i:j,p:x.p}});
+    const lines=['#Linhas (2º menor − menor)'];pr.forEach((x,i)=>{if(x)lines.push(`${lab('O',i)}: ${x.b} − ${x.a} = ${x.p}`)});
+    lines.push('#Colunas (2º menor − menor)');pc.forEach((x,j)=>{if(x)lines.push(`${lab('D',j)}: ${x.b} − ${x.a} = ${x.p}`)});
+    const nm=max.t==='r'?`linha ${lab('O',max.i)}`:`coluna ${lab('D',max.i)}`;
+    lines.push(`!maior penalidade = ${max.p} → ${nm}`);
+    const prv=pr.map(x=>x?x.p:null),pcv=pc.map(x=>x?x.p:null);
+    steps.push({eb:`Rodada ${round}`,title:'Calcule as penalidades',text:'Só olhe as células que ainda estão no jogo (as riscadas não contam).',calc:lines,
+      rule:`A maior penalidade está na ${nm}`,ico:'!',table:tbl({pr:prv,pc:pcv,max})});
+    let bi,bj,best=Infinity;
+    if(max.t==='r'){ac.forEach(j=>{if(C[max.i][j]<best){best=C[max.i][j];bi=max.i;bj=j;}});}
+    else{ar.forEach(i=>{if(C[i][max.i]<best){best=C[i][max.i];bi=i;bj=max.i;}});}
+    const sb=s[bi],db=d[bj],q=Math.min(sb,db);X[bi][bj]=q;s[bi]-=q;d[bj]-=q;
+    const out=[];if(s[bi]===0){rOn[bi]=false;out.push(`${lab('O',bi)} zerou → risca a linha`);}
+    if(d[bj]===0){cOn[bj]=false;out.push(`${lab('D',bj)} zerou → risca a coluna`);}
+    steps.push({eb:`Rodada ${round}`,title:`${cellName(bi,bj)} = ${q}`,text:`Dentro da ${nm}, pegue a célula mais barata e mande o máximo possível.`,
+      calc:[`#Mais barata da ${nm}`,`${lab('O',bi)} → ${lab('D',bj)} custa ${best}`,'#Quanto mandar?',`${lab('O',bi)} tem      ${sb}`,`${lab('D',bj)} precisa  ${db}`,`!${cellName(bi,bj)} = ${q}`],
+      rule:out.join('. '),ico:'✂',table:tbl({band:max,pr:prv,pc:pcv,max,cur:[bi,bj]})});
+    round++;
+  }
+  const lines=['#Custo = quantidade × custo'];let tot=0;
+  X.forEach((r,a)=>r.forEach((x,b)=>{if(x!=null){lines.push(`${cellName(a,b)}: ${x} × ${C[a][b]} = ${x*C[a][b]}`);tot+=x*C[a][b];}}));
+  lines.push('!Total = '+tot,'#Comparando','Canto Noroeste nesse quadro: 556',`Vogel: ${tot}`,'~Testando com U e V, esse resultado já é o ótimo.');
+  steps.push({title:`Rascunho pronto: custo ${tot}`,text:'Bem mais barato que o Canto Noroeste daria no mesmo quadro. Por isso o Vogel costuma ser o preferido.',calc:lines,
+    rule:'Vogel dá mais trabalho, mas chega muito mais perto do ótimo',ico:'✓',table:tbl()});
+  return steps;
+}
+
+/* ---------- U e V ---------- */
+function solveUV(C,X){
+  const m=C.length,n=C[0].length,U=Array(m).fill(null),V=Array(n).fill(null),order=[];U[0]=0;
+  let ch=true;while(ch){ch=false;for(let i=0;i<m;i++)for(let j=0;j<n;j++){if(X[i][j]==null)continue;
+    if(U[i]!=null&&V[j]==null){V[j]=C[i][j]-U[i];order.push({i,j,w:'V',val:V[j],known:U[i]});ch=true;}
+    else if(V[j]!=null&&U[i]==null){U[i]=C[i][j]-V[j];order.push({i,j,w:'U',val:U[i],known:V[j]});ch=true;}}}
+  return {U,V,order};
+}
+function findLoop(X,e){
+  const cells=[];X.forEach((r,i)=>r.forEach((x,j)=>{if(x!=null)cells.push([i,j])}));cells.push(e);
+  const same=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+  function dfs(path,rowMove){
+    const cur=path[path.length-1];
+    for(const c of cells){
+      const ok=rowMove?(c[0]===cur[0]&&c[1]!==cur[1]):(c[1]===cur[1]&&c[0]!==cur[0]);
+      if(!ok)continue;
+      if(same(c,e)){if(path.length>=4&&path.length%2===0)return path;continue;}
+      if(path.some(p=>same(p,c)))continue;
+      const r=dfs([...path,c],!rowMove);if(r)return r;
+    }
+    return null;
+  }
+  return dfs([e],true)||dfs([e],false);
+}
+function uvGen(C,X0,cost0){
+  const m=C.length,n=C[0].length,steps=[];let X=X0.map(r=>r.slice()),cost=cost0,it=1;
+  const rows=C.map((_,i)=>lab('O',i)),cols=C[0].map((_,j)=>lab('D',j));
+  const tbl=(o={})=>({rows,cols,loop:o.loop,
+    cells:C.map((r,i)=>r.map((c,j)=>{let k='',t='',tk='';
+      if(X[i][j]!=null)k+='fill ';
+      if(o.cur&&o.cur[0]===i&&o.cur[1]===j)k+='now ';
+      if(o.changed&&o.changed.some(p=>p[0]===i&&p[1]===j))k+='changed ';
+      if(o.coef&&o.coef[i][j]!=null){t=N(o.coef[i][j]);tk=(o.coef[i][j]<0?'neg':'pos')+' big';if(o.enter&&o.enter[0]===i&&o.enter[1]===j)k+='now ';}
+      if(o.signs){const s=o.signs.find(p=>p[0]===i&&p[1]===j);if(s){t=s[2];tk=(s[2][0]==='+'?'plus':'minus')+' big';}}
+      let v=X[i][j]??'';if(o.leave&&o.leave[0]===i&&o.leave[1]===j){v='0';k+='leave ';}
+      return {c,v,k,t,tk};})),
+    right:[{h:'U',v:(o.U||Array(m).fill('?')).map(x=>x==null||x==='?'?'?':N(x)),k:(o.U||Array(m).fill(null)).map((x,i)=>x==null||x==='?'?'ask':(o.newU===i?'uv new':'uv'))}],
+    bottom:[{h:'V',v:(o.V||Array(n).fill('?')).map(x=>x==null||x==='?'?'?':N(x)),k:(o.V||Array(n).fill(null)).map((x,j)=>x==null||x==='?'?'ask':(o.newV===j?'uv new':'uv'))}]});
+  steps.push({eb:'Começo',title:'Ponto de partida: o rascunho',text:'Esse é o resultado do Canto Noroeste da Parte 2. Agora vamos testar se dá para baratear.',
+    calc:['#A ideia do teste','cada linha ganha um número U','cada coluna ganha um número V','nas células cheias:','!custo = U + V'],rule:`Custo atual: ${cost}`,ico:'$',table:tbl()});
+  while(true){
+    const {U,V,order}=solveUV(C,X);const eb=`Iteração ${it}`;
+    if(it===1){
+      const Us=Array(m).fill(null),Vs=Array(n).fill(null);Us[0]=0;
+      const filled=X.flat().filter(x=>x!=null).length;
+      steps.push({eb,title:'Chute inicial: U₁ = 0',text:'Tem mais incógnitas do que equações, então a gente fixa uma delas. O professor sempre usa U₁ = 0.',
+        calc:['#Contando',`incógnitas: ${m} U + ${n} V = ${m+n}`,`equações (células cheias): ${filled}`,'!falta 1 → fixa U₁ = 0'],table:tbl({U:Us,V:Vs,newU:0})});
+      order.forEach(o=>{
+        const c=C[o.i][o.j];
+        if(o.w==='V')Vs[o.j]=o.val;else Us[o.i]=o.val;
+        const un=o.w==='V'?'V'+sub(o.j+1):'U'+sub(o.i+1),kn=o.w==='V'?'U'+sub(o.i+1):'V'+sub(o.j+1);
+        steps.push({eb,title:`Descobrindo ${un}`,text:`Use uma célula cheia em que você já conhece ${kn}.`,
+          calc:[`#Célula ${cellName(o.i,o.j)} (custo ${c})`,`${c} = U${sub(o.i+1)} + V${sub(o.j+1)}`,o.w==='V'?`${c} = ${P(o.known)} + ${un}`:`${c} = ${un} + ${P(o.known)}`,`${un} = ${c} − ${P(o.known)}`,`!${un} = ${N(o.val)}`],
+          table:tbl({U:Us.slice(),V:Vs.slice(),cur:[o.i,o.j],newU:o.w==='U'?o.i:null,newV:o.w==='V'?o.j:null})});
+      });
+    } else {
+      const lines=['#U₁ = 0 e segue a corrente'];
+      order.forEach(o=>{const c=C[o.i][o.j];const un=o.w==='V'?'V'+sub(o.j+1):'U'+sub(o.i+1);
+        lines.push(`${cellName(o.i,o.j)}: ${un} = ${c} − ${P(o.known)} = ${N(o.val)}`);});
+      steps.push({eb,title:'Recalcule U e V',text:'A tabela mudou, então U e V mudam também. Mesmo jeito: custo = U + V nas células cheias.',calc:lines,table:tbl({U,V})});
+    }
+    const coef=C.map((r,i)=>r.map((c,j)=>X[i][j]==null?c-U[i]-V[j]:null));
+    const lines=['#Vazias: custo − U − V'];let mn=0,e=null;
+    coef.forEach((r,i)=>r.forEach((x,j)=>{if(x!=null){lines.push(`${cellName(i,j)}: ${C[i][j]} − ${P(U[i])} − ${P(V[j])} = ${N(x)}`);if(x<mn){mn=x;e=[i,j];}}}));
+    if(!e){
+      lines.push('!nenhum negativo');
+      steps.push({eb,title:'Todos ≥ 0: é ótima!',text:'Nenhuma rota vazia baratearia o custo. Pode parar.',calc:lines,rule:'Solução ótima encontrada',ico:'✓',table:tbl({U,V,coef})});
+      break;
+    }
+    lines.push(`!mais negativo: ${cellName(e[0],e[1])} = ${N(mn)}`);
+    steps.push({eb,title:'Teste das células vazias',text:'Negativo (vermelho) quer dizer: usar essa rota baratearia. Positivo (verde) não ajuda.',calc:lines,
+      rule:`Tem negativo, então não é ótima. Entra ${cellName(e[0],e[1])}`,ico:'!',table:tbl({U,V,coef,enter:e})});
+    const loop=findLoop(X,e);
+    const signs=loop.map((p,k)=>[p[0],p[1],k%2===0?'+θ':'−θ']);
+    const ll=['#O caminho (alternando)'];loop.forEach((p,k)=>ll.push(`${cellName(p[0],p[1])}  ${k%2===0?'+θ':'−θ'}${k===0?'  (entra)':'  (tem '+X[p[0]][p[1]]+')'}`));
+    ll.push('~Cada linha e coluna fica com um + e um −, então as somas não mudam.');
+    steps.push({eb,title:'Circuito de compensação',text:`Saia de ${cellName(e[0],e[1])}, ande só em linha reta, vire só em células cheias e volte ao começo.`,calc:ll,
+      rule:'Começa com +θ na célula que entra e vai alternando',ico:'±',table:tbl({U,V,signs,loop})});
+    const minus=loop.filter((_,k)=>k%2===1);
+    const theta=Math.min(...minus.map(p=>X[p[0]][p[1]]));
+    const leave=minus.find(p=>X[p[0]][p[1]]===theta);
+    const tl=['#θ = menor entre os −θ',`menor(${minus.map(p=>X[p[0]][p[1]]).join(', ')}) = ${theta}`,`!θ = ${theta}`,'#Aplicando no caminho'];
+    const NX=X.map(r=>r.slice());
+    loop.forEach((p,k)=>{const old=X[p[0]][p[1]]??0,nv=k%2===0?old+theta:old-theta;NX[p[0]][p[1]]=nv;tl.push(`${cellName(p[0],p[1])}: ${old} ${k%2===0?'+':'−'} ${theta} = ${nv}`);});
+    NX[leave[0]][leave[1]]=null;
+    tl.push(`~${cellName(leave[0],leave[1])} zerou e sai da tabela`);
+    const nc=cost+mn*theta;
+    tl.push('#Custo novo',`${cost} + (${N(mn)} × ${theta})`,`!= ${nc}`);
+    X=NX;
+    steps.push({eb,title:`θ = ${theta} e tabela nova`,text:'Some θ onde tem + e subtraia onde tem −. Quem chegar a zero sai.',calc:tl,
+      rule:`Custo caiu de ${cost} para ${nc}. Volta ao teste`,ico:'↻',table:tbl({changed:loop.filter(p=>!(p[0]===leave[0]&&p[1]===leave[1])),leave})});
+    cost=nc;it++;
+    if(it>8)break;
+  }
+  const lines=['#Custo = quantidade × custo'];let tot=0;
+  X.forEach((r,a)=>r.forEach((x,b)=>{if(x!=null){lines.push(`${cellName(a,b)}: ${x} × ${C[a][b]} = ${x*C[a][b]}`);tot+=x*C[a][b];}}));
+  lines.push('!Custo mínimo = '+tot);
+  steps.push({title:`Resposta final: ${tot}`,text:'Igual ao slide. Saímos de 450, passamos por 436, 319 e chegamos em 295.',calc:lines,rule:'Ótima',ico:'✓',table:tbl()});
+  return steps;
+}
+
+/* ---------- Desbalanceado ---------- */
+function desbalSteps(){
+  const C=[[10,15,20],[12,25,18],[16,14,24]],S=[100,80,20],D=[100,50,60];
+  const base=(fict,X)=>{const CC=fict?[...C,[0,0,0]]:C,SS=fict?[...S,10]:S;
+    return {rows:CC.map((_,i)=>lab('O',i)+(fict&&i===3?'*':'')),rowK:CC.map((_,i)=>fict&&i===3?'fict':''),cols:['D₁','D₂','D₃'],
+      cells:CC.map((r,i)=>r.map((c,j)=>({c,v:X?X[i][j]??'':'',k:(X&&X[i][j]!=null?'fill ':'')+(fict&&i===3?'fict fictrow':'')}))),
+      right:[{h:'Oferta',v:SS.map(String),k:SS.map((_,i)=>fict&&i===3?'max':'')}],
+      bottom:[{h:'Demanda',v:D.map(String)}]};};
+  const X=[[70,30,null],[30,null,50],[null,20,null],[null,null,10]];
+  return [
+    {title:'Some e compare',text:'Primeiro passo de qualquer problema: somar a oferta e a demanda.',
+     calc:['Oferta  = 100 + 80 + 20 = 200','Demanda = 100 + 50 + 60 = 210','!falta 10 de oferta'],rule:'Falta oferta → cria uma ORIGEM fictícia',ico:'+',table:base(false)},
+    {title:'Linha fictícia O₄*',text:'Ela tem exatamente o que falta e custo zero em tudo. Na vida real ela não existe.',
+     calc:['O₄* oferta = 10','O₄* custo = 0 em todas as rotas','#Nova soma','Oferta = 200 + 10 = 210','!210 = 210 ✓'],rule:'Se sobrasse oferta, seria um DESTINO fictício (uma coluna nova)',ico:'+',table:base(true)},
+    {title:'Resolve normalmente',text:'Agora é um problema comum. Esta é a resposta do slide.',
+     calc:['#Custo','X₁₁: 70 × 10 = 700','X₁₂: 30 × 15 = 450','X₂₁: 30 × 12 = 360','X₂₃: 50 × 18 = 900','X₃₂: 20 × 14 = 280','X₄₃: 10 × 0  = 0','!Total = 2690'],
+     rule:'O₄* manda 10 para D₃: na prática, D₃ fica com 10 unidades sem receber',ico:'!',table:base(true,X)}
+  ];
+}
+
+/* ---------- Húngaro ---------- */
+function hunSteps(){
+  const rows=['L₁','L₂','L₃','L₄'],cols=['F₁','F₂','F₃','F₄'];
+  const O=[[10,12,15,16],[14,12,13,18],[10,16,19,15],[14,12,13,15]];
+  const R=[[0,2,5,6],[2,0,1,6],[0,6,9,5],[2,0,1,3]];
+  const A=[[0,2,4,3],[2,0,0,3],[0,6,8,2],[2,0,0,0]];
+  const B=[[0,0,2,1],[4,0,0,3],[0,4,6,0],[4,0,0,0]];
+  const has=(L,i,j)=>(L||[]).some(p=>p[0]===i&&p[1]===j);
+  const T=(M,o={})=>({rows,cols,cover:o.cover,
+    cells:M.map((r,i)=>r.map((v,j)=>{let k='';
+      if(o.zeros&&v===0)k+='zero ';
+      if(has(o.asg,i,j))k+='asg ';if(has(o.xz,i,j))k+='xz ';if(has(o.min,i,j))k+='min ';
+      if(o.cover&&((o.cover.rows||[]).includes(i)||(o.cover.cols||[]).includes(j)))k+='cov ';
+      let t='',tk='';if(has(o.dec,i,j)){t='−2';tk='minus';}if(has(o.inc,i,j)){t='+2';tk='plus';}
+      return {v,k,t,tk};})),
+    right:o.right?[o.right]:[],bottom:o.bottom?[o.bottom]:[]});
+  const asg1=[[0,0],[3,3],[1,1]],xz1=[[2,0],[3,1],[3,2],[1,2]];
+  const unc=[[0,1],[0,2],[0,3],[2,1],[2,2],[2,3]];
+  return [
+    {title:'O quadro de custos',text:'Cada máquina (linha) vai para uma única fábrica (coluna). Queremos o menor custo total.',
+     calc:['#Checagem','4 linhas e 4 colunas','!quadrada ✓'],rule:'Se não for quadrada, crie linha ou coluna fictícia com custo 0',ico:'□',table:T(O)},
+    {eb:'Passo a',title:'Ache o menor de cada linha',calc:['#Menor de cada linha','L₁: 10','L₂: 12','L₃: 10','L₄: 12'],
+     table:T(O,{min:[[0,0],[1,1],[2,0],[3,1]],right:{h:'Menor',v:[10,12,10,12],k:['max','max','max','max']}})},
+    {eb:'Passo a',title:'Subtraia da linha inteira',text:'Cada linha perde o seu menor valor. Assim, toda linha ganha pelo menos um zero.',
+     calc:['L₁: 10 12 15 16 − 10','  → 0  2  5  6','L₂: 14 12 13 18 − 12','  → 2  0  1  6','L₃: 10 16 19 15 − 10','  → 0  6  9  5','L₄: 14 12 13 15 − 12','  → 2  0  1  3'],table:T(R,{zeros:true})},
+    {eb:'Passo a',title:'Agora o menor de cada coluna',text:'F₁ e F₂ já têm zero, então não mudam. F₃ e F₄ ainda não têm.',
+     calc:['#Menor de cada coluna','F₁: 0','F₂: 0','F₃: 1','F₄: 3'],
+     table:T(R,{zeros:true,min:[[1,2],[3,3]],bottom:{h:'Menor',v:[0,0,1,3],k:['','','max','max']}})},
+    {eb:'Passo a',title:'Subtraia da coluna inteira',calc:['F₃: 5 1 9 1 − 1','  → 4 0 8 0','F₄: 6 6 5 3 − 3','  → 3 3 2 0','!toda linha e coluna tem zero'],
+     table:T(A,{zeros:true})},
+    {eb:'Passo b',title:'Designe nos zeros',text:'Comece por quem tem um zero só. Cada designação (quadrado) risca os outros zeros da mesma linha e coluna.',
+     calc:['L₁ só tem um zero','  → L₁ vai para F₁','  risca o zero de L₃ em F₁','F₄ só tem um zero','  → L₄ vai para F₄','  risca os outros zeros de L₄','F₂ ficou com um zero livre','  → L₂ vai para F₂','  risca o zero de L₂ em F₃','!3 designações de 4'],
+     rule:'L₃ ficou sem nenhum zero livre. Precisa continuar',ico:'!',table:T(A,{zeros:true,asg:asg1,xz:xz1})},
+    {eb:'Passo c',title:'Cubra os zeros com o mínimo de traços',text:'Faça as marcações nessa ordem e depois risque.',
+     calc:['#Marcar','1. L₃ não tem designação → marca L₃','2. L₃ tem zero em F₁ → marca F₁','3. F₁ tem designação em L₁ → marca L₁','4. L₁ não tem outro zero → para','#Riscar','linhas NÃO marcadas: L₂ e L₄','colunas marcadas: F₁','!3 traços'],
+     table:T(A,{zeros:true,cover:{rows:[1,3],cols:[0]},right:{h:'Marca',v:['✓','','✓',''],k:['mark','','mark','']},bottom:{h:'Marca',v:['✓','','',''],k:['mark','','','']}})},
+    {eb:'Passo d',title:'Menor número sem traço',text:'Olhe só as células brancas, que não estão cobertas por nenhum traço.',
+     calc:['#Sem traço','L₁: 2, 4, 3','L₃: 6, 8, 2','!menor = 2'],table:T(A,{cover:{rows:[1,3],cols:[0]},min:[[0,1],[2,3]]})},
+    {eb:'Passo d',title:'Ajuste a tabela',text:'Sem traço: diminui 2. Cruzamento de dois traços: aumenta 2. Com um traço só: fica igual.',
+     calc:['#Sem traço (−2)','L₁: 2 4 3 → 0 2 1','L₃: 6 8 2 → 4 6 0','#Cruzamentos (+2)','L₂F₁: 2 → 4','L₄F₁: 2 → 4','~O resto não muda'],
+     table:T(B,{zeros:true,dec:unc,inc:[[1,0],[3,0]]})},
+    {eb:'Passo e',title:'Volta ao passo b',text:'Ninguém tem zero único, então escolha um e vá seguindo.',
+     calc:['L₁ → F₁','  L₃ fica só com F₄','L₃ → F₄','  L₂ e L₄ ficam com F₂ e F₃','L₂ → F₂','L₄ → F₃','!4 designações ✓'],rule:'Fechou 4 de 4. Problema resolvido',ico:'✓',
+     table:T(B,{zeros:true,asg:[[0,0],[2,3],[1,1],[3,2]]})},
+    {title:'Custo mínimo: 50',text:'Volte na tabela ORIGINAL e some os custos das células designadas.',
+     calc:['L₁ → F₁: 10','L₂ → F₂: 12','L₃ → F₄: 15','L₄ → F₃: 13','!Total = 50','~Existem outras combinações que também dão 50. Qualquer uma está certa.'],
+     rule:'A soma é sempre feita com os custos originais',ico:'$',table:T(O,{asg:[[0,0],[2,3],[1,1],[3,2]]})}
+  ];
+}
+
+/* ---------- Maximizar ---------- */
+function maxSteps(){
+  const rows=['V₁','V₂','V₃','V₄'],cols=['R₁','R₂','R₃','R₄'];
+  const Pc=[[70,60,80,90],[70,80,70,90],[60,90,60,70],[70,80,70,80]],Pot=[100,80,60,90];
+  const Val=[[70,48,48,81],[70,64,42,81],[60,72,36,63],[70,64,42,72]];
+  const Loss=Val.map(r=>r.map(v=>81-v));
+  const asg=[[0,2],[1,3],[2,1],[3,0]];
+  const T=(M,o={})=>({rows,cols,cells:M.map((r,i)=>r.map((v,j)=>({v:v+(o.pct?'%':''),k:(o.asg&&o.asg.some(p=>p[0]===i&&p[1]===j)?'asg ':'')+(o.min&&o.min.some(p=>p[0]===i&&p[1]===j)?'min':'')}))),
+    bottom:o.bottom?[o.bottom]:[]});
+  return [
+    {title:'Eficiência de cada vendedor',text:'Quanto (%) do potencial da região cada vendedor consegue vender. Na última linha, o potencial da região em milhares.',
+     calc:['#Objetivo','um vendedor por região','!vender o MÁXIMO'],table:T(Pc,{pct:true,bottom:{h:'Potencial',v:Pot,k:['uv','uv','uv','uv']}})},
+    {title:'Transforme em valor de venda',text:'Multiplique a porcentagem pelo potencial da coluna.',
+     calc:['#Linha V₁ (as outras são iguais)','R₁: 70% × 100 = 70','R₂: 60% × 80  = 48','R₃: 80% × 60  = 48','R₄: 90% × 90  = 81'],table:T(Val,{min:[[0,3],[1,3]]})},
+    {title:'Transforme em perda',text:'O maior valor da tabela é 81. A perda é quanto falta para chegar nele. Minimizar a perda é o mesmo que maximizar a venda.',
+     calc:['#perda = 81 − valor','V₁R₁: 81 − 70 = 11','V₁R₂: 81 − 48 = 33','V₁R₄: 81 − 81 = 0','~...e assim em todas as células'],rule:'Agora aplica o Húngaro (Parte 6) nesta tabela',ico:'→',table:T(Loss)},
+    {title:'Resultado: 271 mil',text:'O Húngaro na tabela de perdas aponta estas designações. Some com os VALORES de venda.',
+     calc:['V₁ → R₃: 48','V₂ → R₄: 81','V₃ → R₂: 72','V₄ → R₁: 70','!Total = 271 mil'],rule:'Solução única: nenhuma outra combinação chega a 271',ico:'✓',table:T(Val,{asg})}
+  ];
+}
+
+/* ---------- monta tudo ---------- */
+const UVC=[[6,5,8],[13,12,1],[7,9,5],[10,6,4]];
+document.getElementById('introTable').innerHTML=renderTable({rows:['O₁','O₂','O₃','O₄'],cols:['D₁','D₂','D₃'],
+  cells:UVC.map((r,i)=>r.map((c,j)=>({c,v:i===0&&j===0?'8':'',k:i===0&&j===0?'fill':''}))),
+  right:[{h:'Oferta',v:['10','20','12','13'],k:['uv','uv','uv','uv']}],bottom:[{h:'Demanda',v:['8','32','15'],k:['uv','uv','uv']}]});
+const nw=nwGen(UVC,[10,20,12,13],[8,32,15]);
+makeStepper('st-nw',nw.steps);
+document.getElementById('addrTable').innerHTML=renderTable({rows:['O₁','O₂','O₃','O₄'],cols:['D₁','D₂','D₃'],
+  cells:[0,1,2,3].map(i=>[0,1,2].map(j=>({v:'X'+sub(i+1)+sub(j+1),k:(i===1&&j===2)||(i===3&&j===0)?'now':''})))}).replace('class="tt"','class="tt addr"');
+const pathSpecs=[
+  {id:'pathA',rows:['O₁','O₂','O₃','O₄'],cols:['D₁','D₂','D₃'],X:nw.X,S:[10,20,12,13],D:[8,32,15],path:[[0,0],[0,1],[1,1],[2,1],[2,2],[3,2]]},
+  {id:'pathB',rows:['O₁','O₂','O₃'],cols:['D₁','D₂','D₃'],X:[[70,null,null],[55,55,null],[null,5,75]],S:[70,110,80],D:[125,60,75],path:[[0,0],[1,0],[1,1],[2,1],[2,2]]}];
+pathSpecs.forEach(p=>{p.table={rows:p.rows,cols:p.cols,path:p.path,
+  cells:p.X.map(r=>r.map(x=>({v:x??'',k:x!=null?'fill':''}))),right:[{h:'Oferta',v:p.S,k:p.S.map(()=>'uv')}],bottom:[{h:'Demanda',v:p.D,k:p.D.map(()=>'uv')}]};
+  const w=document.getElementById(p.id);w.querySelector('.inner').innerHTML=renderTable(p.table);});
+const drawPaths=()=>pathSpecs.forEach(p=>drawOverlay(document.getElementById(p.id),p.table));
+requestAnimationFrame(drawPaths);window.addEventListener('resize',drawPaths);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawPaths);
+makeStepper('st-vogel',vogelGen([[12,9,8],[13,12,6],[7,9,5],[3,2,8]],[10,20,10,15],[8,30,17]));
+makeStepper('st-uv',uvGen(UVC,nw.X,nw.cost));
+makeStepper('st-desbal',desbalSteps());
+makeStepper('st-hun',hunSteps());
+makeStepper('st-max',maxSteps());
+</script>
+
+</body></html>
