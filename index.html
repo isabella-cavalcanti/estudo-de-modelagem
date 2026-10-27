@@ -150,6 +150,17 @@ td.cell.now .val,td.cell.min .val{display:inline-block;animation:pop .35s ease-o
 .cola .card h3{font-size:17px}
 .cola .k{font-family:var(--f-mono);font-size:14px;background:var(--soft);border-radius:8px;padding:8px 10px;white-space:pre-wrap}
 .note{font-size:15px;color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{font-family:var(--f-body);font-size:15px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:700}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tabs .lbl{font-size:13px;color:var(--muted);align-self:center;margin-right:4px;text-transform:uppercase;letter-spacing:.06em}
+.gab{display:grid;gap:8px}
+.gab div{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;font-size:15px}
+.gab .ok,.gab .no{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.gab .ok{background:var(--plus-bg);color:var(--plus)}
+.gab .no{background:var(--minus-bg);color:var(--minus)}
+td.cell.raw .val{font-weight:400;color:var(--ink)}
 .demo{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .bigcell{position:relative;width:150px;height:120px;border:2px solid var(--ink);border-radius:4px;background:var(--accent-bg);flex:0 0 auto}
 .bigcell .bc-cost{position:absolute;top:0;right:0;width:48px;height:40px;border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);background:var(--soft);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:20px;color:var(--muted)}
@@ -185,6 +196,7 @@ td.cell.now .val,td.cell.min .val{display:inline-block;animation:pop .35s ease-o
     <a href="#desbal">5 · Desbalanceado</a>
     <a href="#hungaro">6 · Designação</a>
     <a href="#max">7 · Maximizar</a>
+    <a href="#lista3">Lista 3</a>
     <a href="#cola">Cola final</a>
   </nav>
 
@@ -311,6 +323,16 @@ td.cell.now .val,td.cell.min .val{display:inline-block;animation:pop .35s ease-o
     <div class="stepper" id="st-max"></div>
   </section>
 
+  <section id="lista3">
+    <div class="sec-head"><div class="eyebrow">Prática</div><h2>Lista 3: do enunciado à resposta</h2>
+      <p class="lead">Na lista, a tabela vem sem o cantinho. Escolha o exercício, veja primeiro como montar o quadro e depois cada método resolvido passo a passo.</p></div>
+    <div class="tabs" id="exTabs" role="group" aria-label="Exercício"></div>
+    <div class="tip" id="exEnun"></div>
+    <div class="tabs" id="mTabs" role="group" aria-label="O que mostrar"></div>
+    <div class="stepper" id="st-lista"></div>
+    <div class="card" id="exGab"></div>
+  </section>
+
   <section id="cola">
     <div class="sec-head"><div class="eyebrow">Revisão</div><h2>Cola final</h2></div>
     <div class="cola">
@@ -375,7 +397,8 @@ function renderTable(s){
 }
 
 function drawOverlay(wrap,s){
-  const svg=wrap.querySelector('svg.ov');svg.innerHTML='';
+  if(!wrap.isConnected)return;
+  const svg=wrap.querySelector('svg.ov');if(!svg)return;svg.innerHTML='';
   if(!s.loop&&!s.cover&&!s.path)return;
   const W=wrap.scrollWidth,H=wrap.scrollHeight;
   svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
@@ -440,8 +463,12 @@ function makeStepper(id,steps){
   bNext.onclick=()=>{if(k<steps.length-1){k++;show();}};
   root.querySelector('.reset').onclick=()=>{k=0;show();};
   root.tabIndex=0;
-  root.addEventListener('keydown',e=>{if(e.key==='ArrowRight')bNext.click();if(e.key==='ArrowLeft')bPrev.click();});
-  window.addEventListener('resize',()=>drawOverlay(tw,steps[k].table));
+  if(root._kd)root.removeEventListener('keydown',root._kd);
+  root._kd=e=>{if(e.key==='ArrowRight')bNext.click();if(e.key==='ArrowLeft')bPrev.click();};
+  root.addEventListener('keydown',root._kd);
+  if(root._rs)window.removeEventListener('resize',root._rs);
+  root._rs=()=>drawOverlay(tw,steps[k].table);
+  window.addEventListener('resize',root._rs);
   show();
 }
 
@@ -465,7 +492,7 @@ function nwGen(C,S,D){
     else if(s[i]===0){rule=`${lab('O',i)} esvaziou → desce para a linha de baixo`;ico='↓';}
     else{rule=`${lab('D',j)} ficou satisfeito → vai para a coluna da direita`;ico='→';}
     steps.push({title:`${cellName(i,j)} = ${q}`,text:`Quanto cabe nessa célula? O menor valor entre o que sobra na linha e o que falta na coluna.`,
-      calc:[`#Quanto cabe em ${cellName(i,j)}?`,`${lab('O',i)} ainda tem   ${sb}`,`${lab('D',j)} ainda precisa ${db}`,`!menor dos dois = ${q}`,'#Depois de preencher',`${lab('O',i)} fica com ${s[i]}`,`${lab('D',j)} fica faltando ${d[j]}`],
+      calc:[`#Quanto cabe em ${cellName(i,j)}?`,`${lab('O',i)} ainda tem   ${sb}`,`${lab('D',j)} ainda precisa ${db}`,`!menor dos dois = ${q}`,'#Depois de preencher',`${lab('O',i)} fica com ${s[i]}`,`${lab('D',j)} fica faltando ${d[j]}`].concat(q===0?['~Zero de propósito: é o caso degenerado. Esse 0 conta como célula cheia para fechar m + n − 1.']:[]),
       rule,ico,table:tbl([i,j])});
     if(last)break;
     if(s[i]===0)i++;else j++;
@@ -479,7 +506,7 @@ function nwGen(C,S,D){
 }
 
 /* ---------- Vogel ---------- */
-function vogelGen(C,S,D){
+function vogelGen(C,S,D,opt={}){
   const m=C.length,n=C[0].length,X=C.map(r=>r.map(()=>null)),s=S.slice(),d=D.slice(),steps=[];
   const rOn=Array(m).fill(true),cOn=Array(n).fill(true);
   const rows=C.map((_,i)=>lab('O',i)),cols=C[0].map((_,j)=>lab('D',j));
@@ -516,6 +543,7 @@ function vogelGen(C,S,D){
     lines.push('#Colunas (2º menor − menor)');pc.forEach((x,j)=>{if(x)lines.push(`${lab('D',j)}: ${x.b} − ${x.a} = ${x.p}`)});
     const nm=max.t==='r'?`linha ${lab('O',max.i)}`:`coluna ${lab('D',max.i)}`;
     lines.push(`!maior penalidade = ${max.p} → ${nm}`);
+    if([...pr,...pc].filter(x=>x&&x.p===max.p).length>1)lines.push('~Empate! Aqui escolhi a primeira da lista. Outra escolha também vale e pode dar outro rascunho.');
     const prv=pr.map(x=>x?x.p:null),pcv=pc.map(x=>x?x.p:null);
     steps.push({eb:`Rodada ${round}`,title:'Calcule as penalidades',text:'Só olhe as células que ainda estão no jogo (as riscadas não contam).',calc:lines,
       rule:`A maior penalidade está na ${nm}`,ico:'!',table:tbl({pr:prv,pc:pcv,max})});
@@ -532,9 +560,11 @@ function vogelGen(C,S,D){
   }
   const lines=['#Custo = quantidade × custo'];let tot=0;
   X.forEach((r,a)=>r.forEach((x,b)=>{if(x!=null){lines.push(`${cellName(a,b)}: ${x} × ${C[a][b]} = ${x*C[a][b]}`);tot+=x*C[a][b];}}));
-  lines.push('!Total = '+tot,'#Comparando','Canto Noroeste nesse quadro: 556',`Vogel: ${tot}`,'~Testando com U e V, esse resultado já é o ótimo.');
-  steps.push({title:`Rascunho pronto: custo ${tot}`,text:'Bem mais barato que o Canto Noroeste daria no mesmo quadro. Por isso o Vogel costuma ser o preferido.',calc:lines,
-    rule:'Vogel dá mais trabalho, mas chega muito mais perto do ótimo',ico:'✓',table:tbl()});
+  const nwc=opt.nwCost??nwGen(C,S,D).cost;
+  lines.push('!Total = '+tot,'#Comparando',`Canto Noroeste: ${nwc}`,`Vogel: ${tot}`);
+  if(opt.optCost!=null)lines.push(opt.optCost===tot?'~Testando com U e V, esse resultado já é o ótimo.':`~O ótimo é ${opt.optCost}. O Vogel ficou a ${tot-opt.optCost} de distância.`);
+  steps.push({title:`Rascunho pronto: custo ${tot}`,text:tot<nwc?'Mais barato que o Canto Noroeste no mesmo quadro. Por isso o Vogel costuma ser o preferido.':'Nesse quadro o Vogel não ganhou do Canto Noroeste. Acontece, mas é raro.',calc:lines,
+    rule:'Vogel dá mais trabalho, mas costuma chegar mais perto do ótimo',ico:'✓',table:tbl()});
   return steps;
 }
 
@@ -562,8 +592,8 @@ function findLoop(X,e){
   }
   return dfs([e],true)||dfs([e],false);
 }
-function uvGen(C,X0,cost0){
-  const m=C.length,n=C[0].length,steps=[];let X=X0.map(r=>r.slice()),cost=cost0,it=1;
+function uvGen(C,X0,cost0,opt={}){
+  const m=C.length,n=C[0].length,steps=[];let X=X0.map(r=>r.slice()),cost=cost0,it=1;const hist=[cost0];
   const rows=C.map((_,i)=>lab('O',i)),cols=C[0].map((_,j)=>lab('D',j));
   const tbl=(o={})=>({rows,cols,loop:o.loop,
     cells:C.map((r,i)=>r.map((c,j)=>{let k='',t='',tk='';
@@ -576,7 +606,7 @@ function uvGen(C,X0,cost0){
       return {c,v,k,t,tk};})),
     right:[{h:'U',v:(o.U||Array(m).fill('?')).map(x=>x==null||x==='?'?'?':N(x)),k:(o.U||Array(m).fill(null)).map((x,i)=>x==null||x==='?'?'ask':(o.newU===i?'uv new':'uv'))}],
     bottom:[{h:'V',v:(o.V||Array(n).fill('?')).map(x=>x==null||x==='?'?'?':N(x)),k:(o.V||Array(n).fill(null)).map((x,j)=>x==null||x==='?'?'ask':(o.newV===j?'uv new':'uv'))}]});
-  steps.push({eb:'Começo',title:'Ponto de partida: o rascunho',text:'Esse é o resultado do Canto Noroeste da Parte 2. Agora vamos testar se dá para baratear.',
+  steps.push({eb:'Começo',title:'Ponto de partida: o rascunho',text:opt.intro||'Esse é o resultado do Canto Noroeste da Parte 2. Agora vamos testar se dá para baratear.',
     calc:['#A ideia do teste','cada linha ganha um número U','cada coluna ganha um número V','nas células cheias:','!custo = U + V'],rule:`Custo atual: ${cost}`,ico:'$',table:tbl()});
   while(true){
     const {U,V,order}=solveUV(C,X);const eb=`Iteração ${it}`;
@@ -629,13 +659,14 @@ function uvGen(C,X0,cost0){
     X=NX;
     steps.push({eb,title:`θ = ${theta} e tabela nova`,text:'Some θ onde tem + e subtraia onde tem −. Quem chegar a zero sai.',calc:tl,
       rule:`Custo caiu de ${cost} para ${nc}. Volta ao teste`,ico:'↻',table:tbl({changed:loop.filter(p=>!(p[0]===leave[0]&&p[1]===leave[1])),leave})});
-    cost=nc;it++;
+    cost=nc;it++;hist.push(nc);
     if(it>8)break;
   }
   const lines=['#Custo = quantidade × custo'];let tot=0;
-  X.forEach((r,a)=>r.forEach((x,b)=>{if(x!=null){lines.push(`${cellName(a,b)}: ${x} × ${C[a][b]} = ${x*C[a][b]}`);tot+=x*C[a][b];}}));
+  X.forEach((r,a)=>r.forEach((x,b)=>{if(x){lines.push(`${cellName(a,b)}: ${x} × ${C[a][b]} = ${x*C[a][b]}`);tot+=x*C[a][b];}}));
   lines.push('!Custo mínimo = '+tot);
-  steps.push({title:`Resposta final: ${tot}`,text:'Igual ao slide. Saímos de 450, passamos por 436, 319 e chegamos em 295.',calc:lines,rule:'Ótima',ico:'✓',table:tbl()});
+  steps.push({title:`Resposta final: ${tot}`,text:(opt.final??'Igual ao slide.')+' Caminho do custo: '+hist.join(' → ')+'.',calc:lines,rule:'Ótima',ico:'✓',table:tbl()});
+  steps.optCost=tot;
   return steps;
 }
 
@@ -748,7 +779,72 @@ pathSpecs.forEach(p=>{p.table={rows:p.rows,cols:p.cols,path:p.path,
 const drawPaths=()=>pathSpecs.forEach(p=>drawOverlay(document.getElementById(p.id),p.table));
 requestAnimationFrame(drawPaths);window.addEventListener('resize',drawPaths);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawPaths);
-makeStepper('st-vogel',vogelGen([[12,9,8],[13,12,6],[7,9,5],[3,2,8]],[10,20,10,15],[8,30,17]));
+makeStepper('st-vogel',vogelGen([[12,9,8],[13,12,6],[7,9,5],[3,2,8]],[10,20,10,15],[8,30,17],{optCost:332}));
+
+/* ---------- Lista 3 ---------- */
+const LISTA=[
+ {n:1,t:'3 fábricas (O) e 3 centros de distribuição (D). Pede Canto Noroeste e Vogel.',C:[[4,8,6],[5,3,7],[9,2,5]],S:[120,80,60],D:[100,80,80],
+  gab:[[1,'Canto Noroeste: 1.180. Bate com o gabarito.'],[0,'Vogel: o gabarito diz 1.240, mas a penalidade de O₁ está errada. Os custos de O₁ são 4, 8 e 6, então fica 6 − 4 = 2 (e não 8 − 4 = 4). A maior penalidade é O₃ = 3 e o Vogel dá 1.120.'],[0,'Ótimo: 1.060. O gabarito diz que o Noroeste (1.180) já era ótimo, mas o teste com U e V encontra um coeficiente negativo.']]},
+ {n:2,t:'3 origens e 4 destinos. Pede balanço, Canto Noroeste, Vogel e a solução ótima.',C:[[2,3,11,7],[1,0,6,1],[5,8,15,9]],S:[6,1,10],D:[7,5,3,2],
+  gab:[[1,'Balanceado: 17 = 17. Bate.'],[1,'Canto Noroeste: 116, com X₃₁ = 0 (caso degenerado). Bate.'],[0,'Vogel: o gabarito calculou maior − menor (por exemplo, D₃ = 15 − 6 = 9). O certo é 2º menor − menor: D₃ = 11 − 6 = 5 e D₄ = 7 − 1 = 6. O Vogel dá 102 (o gabarito diz 113).'],[1,'Ótimo: 100. Quem chegou mais perto foi o Vogel (102), bem melhor que o Noroeste (116).']]},
+ {n:3,t:'4 armazéns e 3 lojas. Pede Canto Noroeste e Vogel com o custo total.',C:[[3,1,7],[5,2,4],[8,6,3],[2,9,5]],S:[30,40,50,20],D:[60,40,40],
+  gab:[[1,'Canto Noroeste: 600. Bate.'],[0,'Vogel: a resposta do gabarito (390) não fecha. O₃ manda só 40 dos 50 que tem e D₂ recebe só 30 dos 40 que precisa. Além disso, nenhuma solução pode custar menos que o ótimo (410). O Vogel correto dá 410.'],[1,'Ótimo: 410. Aqui o Vogel já chega no ótimo.']]},
+ {n:4,t:'Cooperativa com 3 produtores e 3 destinos. A oferta é menor que a demanda. Pede o balanceamento e o Vogel.',C:[[6,4,9],[3,7,2],[5,1,8]],S:[90,70,60],D:[110,80,50],
+  gab:[[1,'Desequilíbrio: faltam 240 − 220 = 20. Cria a origem fictícia O₄ com oferta 20 e custo 0. Bate.'],[0,'Vogel: o gabarito só olhou as penalidades das colunas. Na linha O₃ (custos 5, 1 e 8) a penalidade é 5 − 1 = 4, a maior de todas. O Vogel dá 760 (o gabarito diz 960).'],[1,'Ótimo: 720.']]},
+ {n:5,t:'3 depósitos e 4 clientes. A oferta é maior que a demanda. Pede o balanceamento, o Vogel e quem fica com o excedente.',C:[[7,2,5,3],[4,8,1,6],[9,3,7,2]],S:[50,40,60],D:[30,40,35,25],
+  gab:[[1,'O gabarito não traz esse exercício. Estas são as respostas conferidas aqui.'],[1,'Sobram 150 − 130 = 20. Cria o destino fictício D₅ com demanda 20 e custo 0.'],[1,'Vogel: 410. Nessa solução, D₅ recebe 15 de O₁ e 5 de O₂.'],[1,'Ótimo: 375. Na solução ótima, quem fica com o excedente é O₃, com 20 unidades.']]},
+ {n:6,t:'4 centros de distribuição e 4 clientes. Pede Noroeste, Vogel e o MODI (é o mesmo método do U e V).',C:[[8,6,10,9],[9,12,13,7],[14,9,16,5],[6,8,12,11]],S:[35,50,40,25],D:[30,40,30,50],
+  gab:[[1,'Canto Noroeste: 1.525, com 4 + 4 − 1 = 7 células cheias. Bate.'],[0,'Vogel: duas penalidades estão erradas no gabarito (D₂ = 8 − 6 = 2 e D₄ = 7 − 5 = 2). Na 2ª rodada todas empatam em 2, então a escolha é livre: o gabarito chega em 1.150 e aqui o resultado é 1.120. Os dois são rascunhos válidos.'],[1,'Ótimo (MODI): 1.120.']]}
+];
+function balance(e){
+  const sS=e.S.reduce((a,b)=>a+b),sD=e.D.reduce((a,b)=>a+b);
+  if(sS===sD)return {C:e.C,S:e.S,D:e.D,f:null};
+  if(sS<sD)return {C:[...e.C,e.C[0].map(()=>0)],S:[...e.S,sD-sS],D:e.D,f:{t:'r',i:e.C.length,q:sD-sS}};
+  return {C:e.C.map(r=>[...r,0]),S:e.S,D:[...e.D,sS-sD],f:{t:'c',i:e.C[0].length,q:sS-sD}};
+}
+function montarSteps(e){
+  const m=e.C.length,rows=e.C.map((_,i)=>lab('O',i)),cols=e.C[0].map((_,j)=>lab('D',j));
+  const sS=e.S.reduce((a,b)=>a+b),sD=e.D.reduce((a,b)=>a+b);
+  const T=(upto,cur)=>({rows,cols,cells:e.C.map((r,i)=>r.map((c,j)=>i<=upto?{c,v:'',k:i===cur?'now':''}:{v:c,k:'raw'})),
+    right:[{h:'Oferta',v:e.S,k:e.S.map(()=>'uv')}],bottom:[{h:'Demanda',v:e.D,k:e.D.map(()=>'uv')}]});
+  const st=[{title:'Como vem na lista',text:'A tabela do professor tem só os custos, sem cantinho. Vamos passar cada número para o seu quadradinho.',
+    calc:['#Cada número é um custo',`${rows[0]} → ${cols[0]} custa ${e.C[0][0]}`,`${rows[0]} → ${cols[1]} custa ${e.C[0][1]}`,'~...e assim por diante'],table:T(-1)}];
+  for(let i=0;i<m;i++)st.push({title:`Copie a linha ${rows[i]}`,text:'Cada custo vai para o cantinho da célula na mesma posição. O meio da célula fica vazio.',
+    calc:[`#Linha ${rows[i]}`,...e.C[i].map((c,j)=>`${c} → cantinho de ${cellName(i,j)}`)],table:T(i,i)});
+  const bal=['Oferta  = '+e.S.join(' + ')+' = '+sS,'Demanda = '+e.D.join(' + ')+' = '+sD];
+  if(sS===sD){st.push({title:'Confira o balanço',calc:[...bal,'!iguais → quadro pronto'],rule:'Agora é só escolher o método nas abas acima',ico:'✓',table:T(m)});return st;}
+  const B=balance(e),f=B.f;
+  st.push({title:'Confira o balanço',calc:[...bal,`!diferença = ${f.q}`],rule:f.t==='r'?'Falta oferta → cria uma ORIGEM fictícia (linha nova)':'Sobra oferta → cria um DESTINO fictício (coluna nova)',ico:'+',table:T(m)});
+  const R=B.C.map((_,i)=>lab('O',i)+(f.t==='r'&&i===f.i?'*':'')),Cc=B.C[0].map((_,j)=>lab('D',j)+(f.t==='c'&&j===f.i?'*':''));
+  const isF=(i,j)=>(f.t==='r'&&i===f.i)||(f.t==='c'&&j===f.i);
+  const nm=f.t==='r'?R[f.i]:Cc[f.i];
+  st.push({title:`Acrescente ${nm}`,text:'Ela tem exatamente a diferença e custo zero em todas as rotas. Na vida real ela não existe.',
+    calc:[`${nm}: ${f.t==='r'?'oferta':'demanda'} ${f.q}`,'custo 0 em todas as rotas','#Nova soma',`Oferta  = ${B.S.reduce((a,b)=>a+b)}`,`Demanda = ${B.D.reduce((a,b)=>a+b)}`,'!iguais → quadro pronto'],
+    rule:f.t==='r'?`Quem receber de ${nm} fica com essa quantidade sem atender`:`O que for para ${nm} é estoque que sobra na origem`,ico:'!',
+    table:{rows:R,cols:Cc,rowK:R.map((_,i)=>f.t==='r'&&i===f.i?'fict':''),colK:Cc.map((_,j)=>f.t==='c'&&j===f.i?'fict':''),
+      cells:B.C.map((r,i)=>r.map((c,j)=>({c,v:'',k:isF(i,j)?'now':''}))),
+      right:[{h:'Oferta',v:B.S,k:B.S.map((_,i)=>f.t==='r'&&i===f.i?'max':'uv')}],bottom:[{h:'Demanda',v:B.D,k:B.D.map((_,j)=>f.t==='c'&&j===f.i?'max':'uv')}]}});
+  return st;
+}
+const METODOS=['Montar o quadro','Canto Noroeste','Vogel','Ótimo (U e V)'];
+const cache={};let exI=0,mI=0;
+function stepsFor(i){
+  if(cache[i])return cache[i];
+  const e=LISTA[i],B=balance(e),nw=nwGen(B.C,B.S,B.D);
+  const uv=uvGen(B.C,nw.X,nw.cost,{intro:'Esse é o resultado do Canto Noroeste deste exercício. Agora vamos testar se dá para baratear.',final:''});
+  return cache[i]=[montarSteps(e),nw.steps,vogelGen(B.C,B.S,B.D,{nwCost:nw.cost,optCost:uv.optCost}),uv];
+}
+function drawLista(){
+  const e=LISTA[exI];
+  document.getElementById('exTabs').innerHTML='<span class="lbl">Exercício</span>'+LISTA.map((x,i)=>`<button type="button" data-i="${i}" aria-pressed="${i===exI}">${x.n}</button>`).join('');
+  document.getElementById('mTabs').innerHTML='<span class="lbl">Mostrar</span>'+METODOS.map((x,i)=>`<button type="button" data-m="${i}" aria-pressed="${i===mI}">${x}</button>`).join('');
+  document.getElementById('exEnun').innerHTML=`<b>Exercício ${e.n}</b><span>${e.t}</span>`;
+  document.getElementById('exGab').innerHTML='<h3>Conferindo com o gabarito</h3><div class="gab">'+e.gab.map(([ok,s])=>`<div><span class="${ok?'ok':'no'}">${ok?'✓':'!'}</span><span>${s}</span></div>`).join('')+'</div><p class="note">Os resultados daqui foram conferidos de dois jeitos: pelo método do U e V e por um programa de otimização.</p>';
+  makeStepper('st-lista',stepsFor(exI)[mI]);
+}
+document.getElementById('exTabs').addEventListener('click',ev=>{const b=ev.target.closest('button');if(b){exI=+b.dataset.i;mI=0;drawLista();}});
+document.getElementById('mTabs').addEventListener('click',ev=>{const b=ev.target.closest('button');if(b){mI=+b.dataset.m;drawLista();}});
+drawLista();
 makeStepper('st-uv',uvGen(UVC,nw.X,nw.cost));
 makeStepper('st-desbal',desbalSteps());
 makeStepper('st-hun',hunSteps());
